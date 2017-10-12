@@ -850,6 +850,7 @@ static int autoresize(struct ubi_device *ubi, int vol_id)
 
 static void HM_Loop_printPEBsInfo(void *fm_raw, size_t* fm_pos, size_t count, char* printBuf)
 {
+	struct ubi_fm_ec *fmec;
 	int printBufLen = 0;
 	int i = 0;
 	for (i = 0; i < count; i++) 
@@ -1055,7 +1056,6 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		void *fm_raw = ubi->fm_buf;
 		size_t fm_size = ubi->fm_size;
 		struct ubi_fm_hdr *fmhdr;
-		struct ubi_fm_ec *fmec;
 		size_t fm_pos = 0;
 		char* printBuf = 0;
 		int printBufLen = 0;
