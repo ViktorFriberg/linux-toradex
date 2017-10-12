@@ -847,6 +847,28 @@ static int autoresize(struct ubi_device *ubi, int vol_id)
 	return 0;
 }
 
+
+static void HM_Loop_printPEBsInfo(void *fm_raw, size_t* fm_pos, size_t count, char* printBuf)
+{
+	int printBufLen = 0;
+	int i = 0;
+	for (i = 0; i < count; i++) 
+	{
+		fmec = (struct ubi_fm_ec *)(fm_raw + *fm_pos);
+		*fm_pos += sizeof(*fmec);
+
+		printBufLen += sprintf(printBuf + printBufLen, "%d=%d, ", be32_to_cpu(fmec->pnum), be32_to_cpu(fmec->ec));
+		if(i % 50 == 49)
+		{
+			ubi_msg("%s", printBuf);
+			printBufLen = 0;
+			printBuf[0] = '\0';
+		}
+	}
+	if(printBuf[0] != '\0') ubi_msg("%s", printBuf);
+	printBuf[0] = '\0';
+}
+
 /**
  * ubi_attach_mtd_dev - attach an MTD device.
  * @mtd: MTD device description object
@@ -1043,28 +1065,6 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		fm_pos += sizeof(struct ubi_fm_hdr);
 		fm_pos += sizeof(struct ubi_fm_scan_pool);
 		fm_pos += sizeof(struct ubi_fm_scan_pool);
-
-
-		static void HM_Loop_printPEBsInfo(void *fm_raw, size_t* fm_pos, size_t count, char* printBuf)
-		{
-			int printBufLen = 0;
-			int i = 0;
-			for (i = 0; i < be32_to_cpu(fmhdr->free_peb_count); i++) 
-			{
-				fmec = (struct ubi_fm_ec *)(fm_raw + *fm_pos);
-				*fm_pos += sizeof(*fmec);
-	
-				printBufLen += sprintf(printBuf + printBufLen, "%d=%d, ", be32_to_cpu(fmec->pnum), be32_to_cpu(fmec->ec));
-				if(i % 50 == 49)
-				{
-					ubi_msg("%s", printBuf);
-					printBufLen = 0;
-					printBuf[0] = '\0';
-				}
-			}
-			if(printBuf[0] != '\0') ubi_msg("%s", printBuf);
-			printBuf[0] = '\0';
-		}
 
 		printBuf = vmalloc(80000);
 		printBufLen = 0;
