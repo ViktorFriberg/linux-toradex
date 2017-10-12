@@ -1044,62 +1044,48 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 		fm_pos += sizeof(struct ubi_fm_scan_pool);
 		fm_pos += sizeof(struct ubi_fm_scan_pool);
 
+
+		static void HM_Loop_printPEBsInfo(void *fm_raw, size_t* fm_pos, size_t count, char* printBuf)
+		{
+			int printBufLen = 0;
+			int i = 0;
+			for (i = 0; i < be32_to_cpu(fmhdr->free_peb_count); i++) 
+			{
+				fmec = (struct ubi_fm_ec *)(fm_raw + *fm_pos);
+				*fm_pos += sizeof(*fmec);
+	
+				printBufLen += sprintf(printBuf + printBufLen, "%d=%d, ", be32_to_cpu(fmec->pnum), be32_to_cpu(fmec->ec));
+				if(i % 50 == 49)
+				{
+					ubi_msg("%s", printBuf);
+					printBufLen = 0;
+					printBuf[0] = '\0';
+				}
+			}
+			if(printBuf[0] != '\0') ubi_msg("%s", printBuf);
+			printBuf[0] = '\0';
+		}
+
 		printBuf = vmalloc(80000);
 		printBufLen = 0;
 		printBuf[0] = '\0';
-		ubi_msg("HM %d free PEBs: ", be32_to_cpu(fmhdr->free_peb_count));
-		/* read EC values from free list */
-		for (i = 0; i < be32_to_cpu(fmhdr->free_peb_count); i++) {
-			fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
-			fm_pos += sizeof(*fmec);
-			if (fm_pos >= fm_size)
-				goto skip_hm_ec_calc;
 
-			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
-		}
-		ubi_msg("%s", printBuf);
-		printBufLen = 0;
-		printBuf[0] = '\0';
+		ubi_msg("HM %d free PEBs (PNR=EC): ", be32_to_cpu(fmhdr->free_peb_count));
+		HM_Loop_printPEBsInfo(fm_raw, &fm_pos, be32_to_cpu(fmhdr->free_peb_count), printBuf);
+		if(fm_pos >= fm_size) goto skip_hm_ec_calc;
+
+		ubi_msg("HM %d used PEBs (PNR=EC): ", be32_to_cpu(fmhdr->used_peb_count));
+		HM_Loop_printPEBsInfo(fm_raw, &fm_pos, be32_to_cpu(fmhdr->used_peb_count), printBuf);
+		if(fm_pos >= fm_size) goto skip_hm_ec_calc;
 		
-		ubi_msg("HM %d used PEBs: ", be32_to_cpu(fmhdr->used_peb_count));
-		/* read EC values from used list */
-		for (i = 0; i < be32_to_cpu(fmhdr->used_peb_count); i++) {
-			fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
-			fm_pos += sizeof(*fmec);
-			if (fm_pos >= fm_size)
-				goto skip_hm_ec_calc;
-
-			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
-		}
-		ubi_msg("%s", printBuf);
-		printBufLen = 0;
-		printBuf[0] = '\0';
-
-		ubi_msg("HM %d scrub PEBs: ", be32_to_cpu(fmhdr->scrub_peb_count));
-		/* read EC values from scrub list */
-		for (i = 0; i < be32_to_cpu(fmhdr->scrub_peb_count); i++) {
-			fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
-			fm_pos += sizeof(*fmec);
-			if (fm_pos >= fm_size)
-				goto skip_hm_ec_calc;
-
-			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
-		}
-		ubi_msg("%s", printBuf);
-		printBufLen = 0;
-		printBuf[0] = '\0';
-
-		ubi_msg("HM %d erase PEBs: ", be32_to_cpu(fmhdr->erase_peb_count));
-		/* read EC values from erase list */
-		for (i = 0; i < be32_to_cpu(fmhdr->erase_peb_count); i++) {
-			fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
-			fm_pos += sizeof(*fmec);
-			if (fm_pos >= fm_size)
-				goto skip_hm_ec_calc;
-
-			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
-		}
-		ubi_msg("%s", printBuf);
+		ubi_msg("HM %d scrub PEBs (PNR=EC): ", be32_to_cpu(fmhdr->scrub_peb_count));
+		HM_Loop_printPEBsInfo(fm_raw, &fm_pos, be32_to_cpu(fmhdr->scrub_peb_count), printBuf);
+		if(fm_pos >= fm_size) goto skip_hm_ec_calc;
+		
+		ubi_msg("HM %d erase PEBs (PNR=EC): ", be32_to_cpu(fmhdr->erase_peb_count));
+		HM_Loop_printPEBsInfo(fm_raw, &fm_pos, be32_to_cpu(fmhdr->erase_peb_count), printBuf);
+		if(fm_pos >= fm_size) goto skip_hm_ec_calc;
+		
 		goto done_with_hm_ec_calc;
 	skip_hm_ec_calc:
 		ubi_msg("Skipped HM ec calc");
