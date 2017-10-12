@@ -1027,6 +1027,80 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 	ubi_msg("user volume: %d, internal volumes: %d, max. volumes count: %d",
 		ubi->vol_count - UBI_INT_VOL_COUNT, UBI_INT_VOL_COUNT,
 		ubi->vtbl_slots);
+	#define HM_PRINT_FULL_PEB_INFO
+#if defined(HM_PRINT_FULL_PEB_INFO)
+	void *fm_raw = ubi->fm_buf;
+	struct ubi_fm_hdr *fmhdr;
+	struct ubi_fm_ec *fmec;
+	size_t fm_pos = 0;
+	fm_pos += sizeof(struct ubi_fm_sb);
+	fmhdr = (struct ubi_fm_hdr *)(fm_raw + fm_pos);
+	fm_pos += sizeof(struct ubi_fm_hdr);
+	fm_pos += sizeof(struct ubi_fm_scan_pool);
+	fm_pos += sizeof(struct ubi_fm_scan_pool);
+
+	char* printBuf = vmalloc(80000);
+	int printBufLen = 0;
+	printBuf[0] = '\0';
+	ubi_msg("HM %d free PEBs: ", be32_to_cpu(fmhdr->free_peb_count));
+	/* read EC values from free list */
+	for (i = 0; i < be32_to_cpu(fmhdr->free_peb_count); i++) {
+		fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
+		fm_pos += sizeof(*fmec);
+		if (fm_pos >= fm_size)
+			goto skip_hm_ec_calc;
+
+		printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
+	}
+	ubi_msg(printBuf);
+	printBufLen = 0;
+	printBuf[0] = '\0';
+	
+	ubi_msg("HM %d used PEBs: ", be32_to_cpu(fmhdr->used_peb_count));
+	/* read EC values from used list */
+	for (i = 0; i < be32_to_cpu(fmhdr->used_peb_count); i++) {
+		fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
+		fm_pos += sizeof(*fmec);
+		if (fm_pos >= fm_size)
+			goto skip_hm_ec_calc;
+
+		printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
+	}
+	ubi_msg(printBuf);
+	printBufLen = 0;
+	printBuf[0] = '\0';
+
+	ubi_msg("HM %d scrub PEBs: ", be32_to_cpu(fmhdr->scrub_peb_count));
+	/* read EC values from scrub list */
+	for (i = 0; i < be32_to_cpu(fmhdr->scrub_peb_count); i++) {
+		fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
+		fm_pos += sizeof(*fmec);
+		if (fm_pos >= fm_size)
+			goto skip_hm_ec_calc;
+
+		printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
+	}
+	ubi_msg(printBuf);
+	printBufLen = 0;
+	printBuf[0] = '\0';
+
+	ubi_msg("HM %d erase PEBs: ", be32_to_cpu(fmhdr->erase_peb_count));
+	/* read EC values from erase list */
+	for (i = 0; i < be32_to_cpu(fmhdr->erase_peb_count); i++) {
+		fmec = (struct ubi_fm_ec *)(fm_raw + fm_pos);
+		fm_pos += sizeof(*fmec);
+		if (fm_pos >= fm_size)
+			goto skip_hm_ec_calc;
+
+		printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
+	}
+	ubi_msg(printBuf);
+	goto done_with_hm_ec_calc;
+skip_hm_ec_calc:
+	ubi_msg("Skipped HM ec calc");
+done_with_hm_ec_calc:
+	vfree(printBuf);
+#endif
 	ubi_msg("max/mean erase counter: %d/%d, WL threshold: %d, image sequence number: %u",
 		ubi->max_ec, ubi->mean_ec, CONFIG_MTD_UBI_WL_THRESHOLD,
 		ubi->image_seq);
