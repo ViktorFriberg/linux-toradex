@@ -1057,7 +1057,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 
 			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
 		}
-		ubi_msg(printBuf, 0);
+		ubi_msg("%s", printBuf);
 		printBufLen = 0;
 		printBuf[0] = '\0';
 		
@@ -1071,7 +1071,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 
 			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
 		}
-		ubi_msg(printBuf, 0);
+		ubi_msg("%s", printBuf);
 		printBufLen = 0;
 		printBuf[0] = '\0';
 
@@ -1085,7 +1085,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 
 			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
 		}
-		ubi_msg(printBuf, 0);
+		ubi_msg("%s", printBuf);
 		printBufLen = 0;
 		printBuf[0] = '\0';
 
@@ -1099,7 +1099,7 @@ int ubi_attach_mtd_dev(struct mtd_info *mtd, int ubi_num,
 
 			printBufLen += sprintf(printBuf + printBufLen, "%d, ", be32_to_cpu(fmec->ec));
 		}
-		ubi_msg(printBuf, 0);
+		ubi_msg("%s", printBuf);
 		goto done_with_hm_ec_calc;
 	skip_hm_ec_calc:
 		ubi_msg("Skipped HM ec calc");
