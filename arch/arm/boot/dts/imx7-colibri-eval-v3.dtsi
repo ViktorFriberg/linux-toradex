@@ -8,10 +8,7 @@
  */
 
 / {
-	chosen {
-		bootargs = "console=ttymxc0,115200";
-	};
-
+	
 	clocks {
 		/* fixed crystal dedicated to mpc258x */
 		clk16m: clk@1 {
