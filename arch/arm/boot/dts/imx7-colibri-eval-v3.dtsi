@@ -8,7 +8,10 @@
  */
 
 / {
-	
+	chosen {
+		bootargs = "mtdparts=gpmi-nand:512k(mx7-bcb),1536k(u-boot1)ro,1536k(u-boot2)ro,512k(u-boot-env),16384k(kernel),-(ubi) console=ttymxc0,115200 ubi.mtd=ubi root=ubi0:rootfs rw rootfstype=ubifs consoleblank=0";
+	};
+
 	clocks {
 		/* fixed crystal dedicated to mpc258x */
 		clk16m: clk@1 {
