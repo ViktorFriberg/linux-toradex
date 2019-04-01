@@ -777,7 +777,7 @@ static int ax88772_bind(struct usbnet *dev, struct usb_interface *intf)
                 memcpy(buf, default_asix_mac, ETH_ALEN);
             }
 
-		} else devwarn(dev, "using default ASIX MAC, %d", g_usr_mac);
+		} else netdev_dbg(dev->net, "using default ASIX MAC, %d", g_usr_mac);
 	}
 	asix_set_netdev_dev_addr(dev, buf);
 
